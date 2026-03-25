@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cotizador GNC · Lista Abril 2026</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <div id="fatal" style="display:none;max-width:1100px;margin:12px auto 0 auto;padding:10px 14px;border:1px solid #fecaca;background:#fff1f2;color:#7f1d1d;border-radius:12px;font-weight:900;"></div>
+
+  <div class="topbar">
+    <div class="topwrap">
+      <div class="brand">
+        <div class="logo">Q</div>
+        <div>
+          <h1>Cotizador de equipos GNC</h1>
+          <div class="sub">Lista de precios Abril 2026 · rápido para mostrador</div>
+        </div>
+      </div>
+      <div class="actionsTop">
+        <div class="pill" id="status">—</div>
+        <button class="btnTop" id="copyTop" type="button">Copiar</button>
+        <button class="btnTop primary" id="openPresupuesto" type="button">Presupuesto</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" type="button"><span class="dot"></span>Cotizar</button>
+      <button class="tab" type="button" disabled style="opacity:.55;cursor:not-allowed">Lista</button>
+      <button class="tab" type="button" disabled style="opacity:.55;cursor:not-allowed">Notas</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="cardHead">
+        <div class="t">Selección</div>
+        <div class="pill">generación → cilindro → pago</div>
+      </div>
+      <div class="cardBody">
+        <div class="grid2">
+          <div>
+            <label>Generación</label>
+            <div class="seg">
+              <button id="gen5" class="active" type="button">5ta</button>
+              <button id="gen4" type="button">4ta</button>
+            </div>
+          </div>
+          <div>
+            <label>Cilindro (capacidad)</label>
+            <select id="cilSelect"></select>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-top:12px">
+          <div>
+            <label>Asesor</label>
+            <input id="asesorInput" class="textInput" type="text" placeholder="Nombre" />
+          </div>
+          <div>
+            <label>Vehículo (modelo)</label>
+            <input id="modeloInput" class="textInput" type="text" placeholder="Ej: VENTO 2.5 / GOL TREND / ETC" />
+          </div>
+        </div>
+
+
+        <div style="margin-top:12px">
+          <label>Pago</label>
+          <div class="payMain" id="payMain"></div>
+
+          <div class="subPay" id="subPay">
+            <label style="margin:0">Financiación</label>
+            <div class="subGrid" id="paySub"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card resultCard">
+      <div class="cardHead">
+        <div class="t">Resultado</div>
+        <div class="pill" id="payLabel">—</div>
+      </div>
+
+      <div class="resultTop">
+        <div class="resultLine" id="line1">—</div>
+        <div class="resultTotal" id="totalBig">—</div>
+      </div>
+
+      <div class="resultMeta">
+        <div class="metaRow">
+          <div class="k">Cilindro (ref.)</div>
+          <div class="v" id="cilRef">—</div>
+        </div>
+        <div class="metaRow">
+          <div class="k">Cuota</div>
+          <div class="v" id="cuotaRef">—</div>
+        </div>
+        <div class="metaRow">
+          <div class="k">Detalle</div>
+          <div class="v" id="detail">—</div>
+        </div>
+
+        <button class="copyBtn" id="copyBtn" type="button">COPIAR</button>
+        <button class="resetBtn" id="resetBtn" type="button">RESET</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copiado</div>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

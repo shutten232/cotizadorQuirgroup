@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Presupuesto GNC · Quirgroup</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      --brand-red:#e30613;
+      --brand-black:#0b0b0c;
+      --ink:#111214;
+      --muted:#5b5f66;
+      --paper:#ffffff;
+      --line:#e7e8ea;
+      --soft:#f5f6f7;
+
+      --radius:14px;
+      --shadow: 0 10px 26px rgba(0,0,0,.10);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#eceef1;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+    }
+
+    /* ====== CONTROLES (pantalla) ====== */
+    .toolbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background:rgba(236,238,241,.92);
+      backdrop-filter: blur(8px);
+      border-bottom:1px solid #dde0e4;
+      padding:10px 14px;
+      display:flex;
+      gap:10px;
+      justify-content:center;
+    }
+    .btn{
+      border:1px solid #d3d6db;
+      background:#fff;
+      color:#111;
+      padding:10px 12px;
+      border-radius:10px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      box-shadow: 0 1px 0 rgba(0,0,0,.04);
+    }
+    .btn.primary{
+      background:var(--brand-black);
+      border-color:var(--brand-black);
+      color:#fff;
+    }
+    .btn.danger{
+      background:var(--brand-red);
+      border-color:var(--brand-red);
+      color:#fff;
+    }
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    /* ====== A4 ====== */
+    .wrap{
+      display:flex;
+      justify-content:center;
+      padding:18px 12px 30px;
+    }
+    .page{
+      width:210mm;
+      min-height:297mm;
+      background:var(--paper);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      border:1px solid #e2e4e8;
+    }
+    .inner{
+      padding:14mm 14mm 12mm;
+    }
+
+    /* ====== HEADER ====== */
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+    }
+    .logo{
+      height:170px;
+      width:auto;
+      object-fit:contain;
+      display:block;
+    }
+    .contact{
+      text-align:right;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+      margin-top:4px;
+    }
+    .contact .strong{
+      color:var(--ink);
+      font-weight:800;
+      font-size:12.5px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:var(--soft);
+      border:1px solid var(--line);
+      font-weight:800;
+      color:var(--ink);
+      margin-top:8px;
+      font-size:12px;
+    }
+    .pill .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:var(--brand-red);
+      box-shadow: 0 0 0 4px rgba(227,6,19,.12);
+    }
+
+    /* ====== HERO ====== */
+    .hero{
+      margin-top:14px;
+      border-radius:var(--radius);
+      background:
+        radial-gradient(1200px 180px at 0% 0%, rgba(227,6,19,.14), transparent 55%),
+        radial-gradient(900px 160px at 100% 0%, rgba(0,0,0,.10), transparent 55%),
+        linear-gradient(180deg, #0b0b0c, #15171b);
+      color:#fff;
+      padding:16px 16px 14px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .heroTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      padding-bottom:12px;
+      margin-bottom:12px;
+    }
+    .title{
+      font-weight:900;
+      letter-spacing:.8px;
+      font-size:22px;
+      margin:0;
+    }
+    .subtitle{
+      margin:4px 0 0;
+      font-size:12.5px;
+      color:rgba(255,255,255,.75);
+      font-weight:600;
+    }
+    .metaGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:10px 14px;
+      min-width: 290px;
+    }
+    .metaItem span{
+      display:block;
+      font-size:11px;
+      color:rgba(255,255,255,.65);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .metaItem strong{
+      display:block;
+      font-size:13.5px;
+      font-weight:900;
+      margin-top:2px;
+    }
+
+    /* ====== PRICE ====== */
+    .priceRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+    .bigPrice{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .bigPrice .label{
+      font-size:12px;
+      color:rgba(255,255,255,.70);
+      font-weight:800;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+    }
+    .bigPrice .value{
+      font-size:46px;
+      line-height:1;
+      font-weight:900;
+      color:#fff;
+    }
+    .bigPrice .value::before{
+      content:"$ ";
+      font-weight:900;
+      color:rgba(255,255,255,.92);
+    }
+    .listPrice{
+      text-align:right;
+      padding:10px 12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      min-width: 220px;
+    }
+    .listPrice span{
+      display:block;
+      font-size:11px;
+      color:rgba(255,255,255,.70);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+    }
+    .listPrice strong{
+      display:block;
+      margin-top:4px;
+      font-size:18px;
+      font-weight:900;
+    }
+    .listPrice strong::before{ content:"$ "; }
+
+    .noteRow{
+      margin-top:10px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .note{
+      font-size:12px;
+      color:rgba(255,255,255,.72);
+      font-weight:600;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(227,6,19,.14);
+      border:1px solid rgba(227,6,19,.35);
+      font-weight:900;
+      letter-spacing:.25px;
+      font-size:12px;
+    }
+    .badge .miniDot{
+      width:7px;height:7px;border-radius:50%;
+      background:var(--brand-red);
+      box-shadow: 0 0 0 4px rgba(227,6,19,.12);
+    }
+
+    /* ====== SECTIONS ====== */
+    .section{
+      margin-top:14px;
+    }
+    .sectionTitle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 0 10px;
+    }
+    .sectionTitle h2{
+      margin:0;
+      font-size:14px;
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+    .sectionTitle .line{
+      height:1px;
+      background:var(--line);
+      flex:1;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:10px;
+    }
+    .card{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:12px 12px 11px;
+    }
+    .card .k{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+    }
+    .card .v{
+      margin-top:6px;
+      font-size:18px;
+      font-weight:900;
+      color:var(--ink);
+    }
+    .card .v::before{ content:"$ "; }
+    .card.plain .v::before{ content:""; }
+    .card.plain .v{ font-size:14px; font-weight:800; color:var(--muted); }
+    .card.hot{
+      border-color: rgba(227,6,19,.45);
+      box-shadow: 0 8px 22px rgba(227,6,19,.10);
+    }
+    .card.hot .k{
+      color:var(--brand-red);
+    }
+
+    .twoCol{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    .box{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:12px;
+    }
+    .list{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:8px;
+    }
+    .list li{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      font-size:12.5px;
+      color:var(--ink);
+      font-weight:600;
+      line-height:1.25;
+    }
+    .check{
+      width:18px;height:18px;border-radius:6px;
+      background: rgba(227,6,19,.12);
+      border:1px solid rgba(227,6,19,.35);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--brand-red);
+      font-weight:900;
+      flex:0 0 auto;
+      margin-top:1px;
+    }
+
+    .warranty{
+      background: linear-gradient(180deg, #0b0b0c, #15171b);
+      color:#fff;
+      border:1px solid rgba(0,0,0,.3);
+    }
+    .warranty .k{
+      color:rgba(255,255,255,.72);
+      font-weight:800;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+    }
+    .warranty .list li{
+      color:#fff;
+      font-weight:600;
+    }
+    .warranty .check{
+      background:rgba(255,255,255,.10);
+      border-color:rgba(255,255,255,.20);
+      color:#fff;
+    }
+
+    .sell{
+      margin-top:12px;
+      border-radius:14px;
+      padding:12px 12px;
+      background: radial-gradient(700px 120px at 0% 0%, rgba(227,6,19,.16), transparent 55%),
+                  linear-gradient(180deg, #0b0b0c, #15171b);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .sell strong{
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+    .sell span{
+      font-size:12px;
+      color:rgba(255,255,255,.75);
+      font-weight:600;
+    }
+
+    .footer{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    .sig{
+      border:1px dashed #cfd3d9;
+      border-radius:14px;
+      padding:14px 12px;
+      min-height:70px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      gap:6px;
+    }
+    .sig .lbl{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+    }
+    .sig .val{
+      font-size:13px;
+      font-weight:900;
+      color:var(--ink);
+    }
+
+    /* placeholders */
+    [data-k]{ white-space:pre-line; }
+    .empty{ opacity:.55; }
+
+    /* ====== PRINT ====== */
+    @page{ size:A4; margin:0; }
+    @media print {
+      body{ background:#fff; }
+      .toolbar{ display:none !important; }
+      .wrap{ padding:0; }
+      .page{
+        width:210mm;
+        min-height:297mm;
+        border:none;
+        border-radius:0;
+        box-shadow:none;
+      }
+    }
+  
+/* ===== FIX IMPRESION COLORES ===== */
+@media print {
+  body{
+    background:#fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .hero{
+    background:#0b0b0c !important;
+    color:#ffffff !important;
+  }
+
+  .bigPrice .value{
+    color:#ffffff !important;
+    font-weight:900 !important;
+  }
+
+  .listPrice strong{
+    color:#ffffff !important;
+    font-weight:900 !important;
+  }
+
+  *{
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+</style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <button class="btn primary" id="btnPdf">Descargar PDF</button>
+    <button class="btn" onclick="window.print()">Imprimir</button>
+    <div class="hint">Datos automáticos desde el cotizador</div>
+  </div>
+
+  <div class="wrap">
+    <div class="page" id="page">
+      <div class="inner">
+
+        <div class="topbar">
+          <div>
+            <img class="logo" src="ChatGPT Image 14 ene 2026, 04_12_24 p.m..png" alt="Quirgroup" />
+            <div class="pill"><span class="dot"></span> Instalación GNC · Presupuesto</div>
+          </div>
+
+          <div class="contact">
+            <div class="strong" data-k="dir1">Av. Leandro N. Alem 642</div>
+            <div class="strong" data-k="tel1">(351) 217-4455</div>
+            <div style="height:6px"></div>
+            <div class="strong" data-k="dir2">Zipoli 176 (Esq. Colón)</div>
+            <div class="strong" data-k="tel2">(351) 255-3456</div>
+            <div style="height:6px"></div>
+            <div data-k="web">www.quirgroupgnc.com.ar</div>
+          </div>
+        </div>
+
+        <div class="hero">
+          <div class="heroTop">
+            <div>
+              <h1 class="title">PRESUPUESTO</h1>
+              <p class="subtitle">Instalación completa GNC con oblea habilitante</p>
+            </div>
+
+            <div class="metaGrid">
+              <div class="metaItem">
+                <span>Vehículo</span>
+                <strong data-k="vehiculoTitle">—</strong>
+              </div>
+              <div class="metaItem">
+                <span>Equipo</span>
+                <strong data-k="equipo">—</strong>
+              </div>
+              <div class="metaItem">
+                <span>Asesor</span>
+                <strong data-k="asesor">—</strong>
+              </div>
+              <div class="metaItem">
+                <span>Fecha</span>
+                <strong data-k="fecha">—</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="priceRow">
+            <div class="bigPrice">
+              <div class="label">Promo contado (solo efectivo)</div>
+              <div class="value" data-k="precioDestacado">—</div>
+            </div>
+
+            <div class="listPrice">
+              <span>Precio de lista</span>
+              <strong data-k="precioLista">—</strong>
+            </div>
+          </div>
+
+          <div class="noteRow">
+            <div class="note">Incluye instalación, controles y documentación.</div>
+            <div class="badge"><span class="miniDot"></span> Instalación en el día</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sectionTitle">
+            <h2>Planes de pago</h2>
+            <div class="line"></div>
+          </div>
+
+          <div class="cards">
+            <div class="card hot">
+              <div class="k">3 Cuotas s/interés</div>
+              <div class="v" data-k="promo3">—</div>
+            </div>
+            <div class="card">
+              <div class="k">Débito / Transferencia</div>
+              <div class="v" data-k="debito">—</div>
+            </div>
+            <div class="card">
+              <div class="k">6 Cuotas (Cordobesa)</div>
+              <div class="v" data-k="cordo6">—</div>
+            </div>
+            <div class="card">
+              <div class="k">6 Cuotas (Naranja)</div>
+              <div class="v" data-k="naranja6">—</div>
+            </div>
+            <div class="card">
+              <div class="k">8 Cuotas (Naranja)</div>
+              <div class="v" data-k="naranja8">—</div>
+            </div>
+            <div class="card hot">
+  <div class="k">12 Cuotas (Naranja)</div>
+  <div class="v" data-k="naranja12">—</div>
+</div>
+          </div>
+
+          <div class="sell">
+            <div>
+              <strong>Ahorro estimado en combustible</strong><br>
+              <span>Hasta 50% vs nafta, según uso y vehículo</span>
+            </div>
+            <div class="badge"><span class="miniDot"></span> Cuota Simple · Visa/Master</div>
+          </div>
+
+          <div class="twoCol">
+            <div class="box">
+              <div class="sectionTitle" style="margin-bottom:8px">
+                <h2>Incluye</h2><div class="line"></div>
+              </div>
+              <ul class="list">
+                <li><span class="check">✓</span> Equipo completo con carga externa (bonificada)</li>
+                <li><span class="check">✓</span> Válvula cilindro con corte eléctrico</li>
+                <li><span class="check">✓</span> Cunas homologadas / cilindro nuevo</li>
+                <li><span class="check">✓</span> Oblea habilitante (vigencia 1 año)</li>
+                <li><span class="check">✓</span> Control mecánico general (encendido y diagnóstico sin cargo si corresponde)</li>
+              </ul>
+            </div>
+
+            <div class="box warranty">
+              <div class="sectionTitle" style="margin-bottom:8px">
+                <h2 style="color:#fff">Garantía</h2><div class="line" style="background:rgba(255,255,255,.14)"></div>
+              </div>
+              <ul class="list">
+                <li><span class="check">✓</span> Equipos y electrónica: 1 año de fábrica</li>
+                <li><span class="check">✓</span> Cilindros: 5 años de fábrica</li>
+                <li><span class="check">✓</span> Posventa instalación: 12 meses</li>
+                <li><span class="check">✓</span> Control de moderación (relentí y aceleración)</li>
+                <li><span class="check">✓</span> Cobertor de cilindro</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="footer">
+            <div class="sig">
+              <div class="lbl">Observaciones</div>
+              <div class="val">Validez por tiempo limitado.</div>
+            </div>
+            <div class="sig">
+              <div class="lbl">Asesor comercial</div>
+              <div class="val" data-k="asesor">—</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+  function decodePayloadFromHash(){
+    const m = location.hash.match(/[#&]data=([^&]+)/);
+    if(!m) return null;
+    try{
+      const b64 = decodeURIComponent(m[1]);
+      const json = decodeURIComponent(escape(atob(b64)));
+      return JSON.parse(json);
+    }catch(e){ return null; }
+  }
+
+  function readPayload(){
+    const fromHash = decodePayloadFromHash();
+    if(fromHash) return fromHash;
+    try{
+      const s = localStorage.getItem("PRESUPUESTO_PAYLOAD");
+      if(s) return JSON.parse(s);
+    }catch(e){}
+    return null;
+  }
+
+  function setByKey(key, value){
+    const els = document.querySelectorAll('[data-k="'+key+'"]');
+    if(!els || !els.length) return;
+    const v = (value==null || String(value).trim()==="") ? "—" : String(value);
+    els.forEach(el=>{
+      el.textContent = v;
+      el.classList.toggle("empty", v==="—");
+    });
+  }
+
+  function applyPayload(p){
+    // contactos default si el cotizador no manda (se mantiene)
+    const defaults = {
+      dir1: "Av. Leandro N. Alem 642",
+      tel1: "(351) 217-4455",
+      dir2: "Zipoli 176 (Esq. Colón)",
+      tel2: "(351) 255-3456",
+      web: "www.quirgroupgnc.com.ar"
+    };
+    Object.keys(defaults).forEach(k=>setByKey(k, defaults[k]));
+
+    if(!p) {
+      // placeholders
+      ["vehiculoTitle","equipo","asesor","fecha","precioDestacado","precioLista","promo3","debito","cordo6","naranja6","naranja8","naranja12"].forEach(k=>setByKey(k,"—"));
+      return;
+    }
+    Object.keys(p).forEach(k=>setByKey(k, p[k]));
+  }
+
+  async function downloadPDF(){
+
+  const btn = document.getElementById("btnPdf");
+  btn.textContent = "Generando PDF...";
+
+  try{
+
+    const page = document.getElementById("page");
+
+    const canvas = await html2canvas(page,{
+      scale:2,
+      useCORS:true,
+      allowTaint:true,
+      backgroundColor:"#ffffff"
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg",0.95);
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf = new jsPDF({
+      orientation:"portrait",
+      unit:"mm",
+      format:"a4"
+    });
+
+    const pageWidth = 210;
+    const pageHeight = canvas.height * pageWidth / canvas.width;
+
+    pdf.addImage(
+      imgData,
+      "JPEG",
+      0,
+      0,
+      pageWidth,
+      pageHeight,
+      undefined,
+      "FAST"
+    );
+
+    pdf.save("presupuesto-quirgroup.pdf");
+
+  }catch(e){
+
+    alert("Error generando PDF");
+    console.error(e);
+
+  }
+
+  btn.textContent = "Descargar PDF";
+
+}
+
+  document.getElementById("btnPdf").addEventListener("click", downloadPDF);
+
+  applyPayload(readPayload());
+</script>
+
+</body>
+</html>
