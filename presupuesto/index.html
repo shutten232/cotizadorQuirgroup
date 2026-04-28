@@ -4,779 +4,285 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Presupuesto GNC · Quirgroup</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-
   <style>
     :root{
-      --brand-red:#e30613;
-      --brand-black:#0b0b0c;
-      --ink:#111214;
-      --muted:#5b5f66;
-      --paper:#ffffff;
-      --line:#e7e8ea;
-      --soft:#f5f6f7;
-
-      --radius:14px;
-      --shadow: 0 10px 26px rgba(0,0,0,.10);
+      --red:#e30613; --red2:#b50010;
+      --black:#0b0b0c; --ink:#111214;
+      --muted:#5b5f66; --paper:#ffffff;
+      --line:#e4e7eb; --soft:#f5f6f8;
+      --radius:12px; --shadow:0 10px 26px rgba(0,0,0,.10);
     }
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{ background:#eceef1; font-family:'Montserrat',system-ui,sans-serif; color:var(--ink); }
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:#eceef1;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--ink);
-    }
-
-    /* ====== CONTROLES (pantalla) ====== */
     .toolbar{
-      position:sticky;
-      top:0;
-      z-index:50;
-      background:rgba(236,238,241,.92);
-      backdrop-filter: blur(8px);
+      position:sticky; top:0; z-index:50;
+      background:rgba(236,238,241,.92); backdrop-filter:blur(8px);
       border-bottom:1px solid #dde0e4;
-      padding:10px 14px;
-      display:flex;
-      gap:10px;
-      justify-content:center;
+      padding:10px 14px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
     }
-    .btn{
-      border:1px solid #d3d6db;
-      background:#fff;
-      color:#111;
-      padding:10px 12px;
-      border-radius:10px;
-      font-weight:700;
-      font-size:13px;
-      cursor:pointer;
-      box-shadow: 0 1px 0 rgba(0,0,0,.04);
-    }
-    .btn.primary{
-      background:var(--brand-black);
-      border-color:var(--brand-black);
-      color:#fff;
-    }
-    .btn.danger{
-      background:var(--brand-red);
-      border-color:var(--brand-red);
-      color:#fff;
-    }
-    .hint{
-      font-size:12px;
-      color:var(--muted);
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
+    .btn{ border:1px solid #d3d6db; background:#fff; color:#111; padding:9px 14px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; font-family:'Montserrat',sans-serif; }
+    .btn.primary{ background:var(--black); border-color:var(--black); color:#fff; }
+    .btn.wa{ background:#25D366; border-color:#1ebe5d; color:#fff; }
 
-    /* ====== A4 ====== */
-    .wrap{
-      display:flex;
-      justify-content:center;
-      padding:18px 12px 30px;
-    }
-    .page{
-      width:210mm;
-      min-height:297mm;
-      background:var(--paper);
-      border-radius:18px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      border:1px solid #e2e4e8;
-    }
-    .inner{
-      padding:14mm 14mm 12mm;
-    }
+    .wrap{ display:flex; justify-content:center; padding:18px 12px 30px; }
+    .page{ width:210mm; min-height:297mm; background:var(--paper); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; border:1px solid #e2e4e8; }
+    .inner{ padding:13mm 14mm 12mm; }
 
-    /* ====== HEADER ====== */
-    .topbar{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:18px;
+    /* HEADER */
+    .header{ display:flex; align-items:center; justify-content:space-between; gap:18px; }
+    .logo-wrap{ flex:0 0 auto; height:160px; display:flex; align-items:center; }
+    .logo-img{ max-height:160px; max-width:260px; width:auto; height:auto; display:block; object-fit:contain; }
+    .logo-fallback{
+      font-family:'Montserrat',sans-serif; font-weight:900; font-size:32px;
+      letter-spacing:2px; color:var(--black); display:none; line-height:1;
     }
-    .logo{
-      height:170px;
-      width:auto;
-      object-fit:contain;
-      display:block;
-    }
-    .contact{
-      text-align:right;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.35;
-      margin-top:4px;
-    }
-    .contact .strong{
-      color:var(--ink);
-      font-weight:800;
-      font-size:12.5px;
-    }
+    .logo-fallback span{ color:var(--red); }
+    .contact{ text-align:right; font-size:12px; color:var(--muted); line-height:1.6; }
+    .contact .brand{ font-family:'Montserrat',sans-serif; font-weight:900; font-size:18px; letter-spacing:1px; color:var(--black); display:block; margin-bottom:5px; }
+    .contact strong{ color:var(--ink); font-weight:700; }
+    .contact .web{ color:var(--red); font-weight:700; display:block; margin-top:3px; }
     .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:7px 10px;
-      border-radius:999px;
-      background:var(--soft);
-      border:1px solid var(--line);
-      font-weight:800;
-      color:var(--ink);
-      margin-top:8px;
-      font-size:12px;
+      display:inline-flex; align-items:center; gap:7px;
+      padding:6px 10px; border-radius:999px;
+      background:var(--soft); border:1px solid var(--line);
+      font-weight:700; color:var(--ink); margin-top:8px; font-size:12px;
     }
-    .pill .dot{
-      width:8px;height:8px;border-radius:50%;
-      background:var(--brand-red);
-      box-shadow: 0 0 0 4px rgba(227,6,19,.12);
-    }
+    .pill .dot{ width:7px; height:7px; border-radius:50%; background:var(--red); }
 
-    /* ====== HERO ====== */
+    /* HERO */
     .hero{
-      margin-top:14px;
-      border-radius:var(--radius);
-      background:
-        radial-gradient(1200px 180px at 0% 0%, rgba(227,6,19,.14), transparent 55%),
-        radial-gradient(900px 160px at 100% 0%, rgba(0,0,0,.10), transparent 55%),
-        linear-gradient(180deg, #0b0b0c, #15171b);
-      color:#fff;
-      padding:16px 16px 14px;
-      border:1px solid rgba(255,255,255,.08);
+      margin-top:12px; border-radius:var(--radius);
+      background:linear-gradient(180deg,#0d0d0e,#18191c);
+      color:#fff; padding:15px 16px 13px;
+      border:1px solid rgba(255,255,255,.06);
     }
     .heroTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:14px;
-      border-bottom:1px solid rgba(255,255,255,.10);
-      padding-bottom:12px;
-      margin-bottom:12px;
+      display:flex; justify-content:space-between; align-items:flex-start;
+      gap:14px; border-bottom:1px solid rgba(255,255,255,.10); padding-bottom:12px; margin-bottom:12px;
     }
-    .title{
-      font-weight:900;
-      letter-spacing:.8px;
-      font-size:22px;
-      margin:0;
-    }
-    .subtitle{
-      margin:4px 0 0;
-      font-size:12.5px;
-      color:rgba(255,255,255,.75);
-      font-weight:600;
-    }
-    .metaGrid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap:10px 14px;
-      min-width: 290px;
-    }
-    .metaItem span{
-      display:block;
-      font-size:11px;
-      color:rgba(255,255,255,.65);
-      font-weight:700;
-      letter-spacing:.2px;
-    }
-    .metaItem strong{
-      display:block;
-      font-size:13.5px;
-      font-weight:900;
-      margin-top:2px;
-    }
+    .title{ font-family:'Montserrat',sans-serif; font-weight:900; font-size:24px; letter-spacing:1px; margin:0; }
+    .subtitle{ margin:4px 0 0; font-size:12px; color:rgba(255,255,255,.6); font-weight:600; }
+    .metaGrid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px 14px; }
+    .metaItem span{ display:block; font-size:10px; color:rgba(255,255,255,.5); font-weight:700; letter-spacing:.2px; text-transform:uppercase; }
+    .metaItem strong{ display:block; font-size:13px; font-weight:800; margin-top:2px; }
 
-    /* ====== PRICE ====== */
-    .priceRow{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:16px;
-      flex-wrap:wrap;
-    }
-    .bigPrice{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .bigPrice .label{
-      font-size:12px;
-      color:rgba(255,255,255,.70);
-      font-weight:800;
-      letter-spacing:.4px;
-      text-transform:uppercase;
-    }
+    .priceRow{ display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; }
+    .bigPrice .label{ font-size:11px; color:rgba(255,255,255,.55); font-weight:700; letter-spacing:.5px; text-transform:uppercase; }
     .bigPrice .value{
-      font-size:46px;
-      line-height:1;
-      font-weight:900;
-      color:#fff;
+      font-family:'Montserrat',sans-serif; font-weight:900;
+      font-size:72px; line-height:1; color:#fff; letter-spacing:-2px;
     }
-    .bigPrice .value::before{
-      content:"$ ";
-      font-weight:900;
-      color:rgba(255,255,255,.92);
-    }
-    .listPrice{
-      text-align:right;
-      padding:10px 12px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:12px;
-      min-width: 220px;
-    }
-    .listPrice span{
-      display:block;
-      font-size:11px;
-      color:rgba(255,255,255,.70);
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.35px;
-    }
-    .listPrice strong{
-      display:block;
-      margin-top:4px;
-      font-size:18px;
-      font-weight:900;
-    }
-    .listPrice strong::before{ content:"$ "; }
+    .bigPrice .value::before{ content:"$ "; font-size:34px; color:rgba(255,255,255,.65); font-weight:800; }
 
-    .noteRow{
-      margin-top:10px;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .note{
-      font-size:12px;
-      color:rgba(255,255,255,.72);
-      font-weight:600;
-    }
+    .listPrice{ text-align:right; padding:10px 13px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.11); border-radius:10px; min-width:180px; }
+    .listPrice span{ display:block; font-size:10px; color:rgba(255,255,255,.55); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+    .listPrice strong{ display:block; margin-top:4px; font-family:'Montserrat',sans-serif; font-weight:900; font-size:22px; letter-spacing:-1px; }
+    .listPrice strong::before{ content:"$ "; font-size:14px; color:rgba(255,255,255,.6); font-weight:700; }
+
+    .noteRow{ margin-top:9px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center; }
+    .note{ font-size:12px; color:rgba(255,255,255,.65); font-weight:600; }
     .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(227,6,19,.14);
-      border:1px solid rgba(227,6,19,.35);
-      font-weight:900;
-      letter-spacing:.25px;
-      font-size:12px;
+      display:inline-flex; align-items:center; gap:7px; padding:6px 10px; border-radius:999px;
+      background:rgba(227,6,19,.18); border:1px solid rgba(227,6,19,.4); font-weight:700; font-size:11.5px;
     }
-    .badge .miniDot{
-      width:7px;height:7px;border-radius:50%;
-      background:var(--brand-red);
-      box-shadow: 0 0 0 4px rgba(227,6,19,.12);
-    }
+    .badge .md{ width:7px; height:7px; border-radius:50%; background:var(--red); }
 
-    /* ====== SECTIONS ====== */
-    .section{
-      margin-top:14px;
-    }
-    .sectionTitle{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin:0 0 10px;
-    }
-    .sectionTitle h2{
-      margin:0;
-      font-size:14px;
-      font-weight:900;
-      letter-spacing:.3px;
-    }
-    .sectionTitle .line{
-      height:1px;
-      background:var(--line);
-      flex:1;
-    }
+    /* PLANES */
+    .section{ margin-top:13px; }
+    .sectionTitle{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 9px; }
+    .sectionTitle h2{ margin:0; font-size:13px; font-weight:900; letter-spacing:.3px; }
+    .sectionTitle .line{ height:1px; background:var(--line); flex:1; }
 
-    .cards{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap:10px;
-    }
-    .card{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:14px;
-      padding:12px 12px 11px;
-    }
-    .card .k{
-      font-size:11px;
-      color:var(--muted);
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.35px;
-    }
+    .cards{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+    .card{ border:1px solid var(--line); background:#fff; border-radius:10px; padding:11px 11px 10px; }
+    .card .k{ font-size:10.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.35px; }
     .card .v{
-      margin-top:6px;
-      font-size:18px;
-      font-weight:900;
-      color:var(--ink);
+      margin-top:5px; font-family:'Montserrat',sans-serif; font-weight:900;
+      font-size:22px; letter-spacing:-0.5px; color:var(--ink);
     }
-    .card .v::before{ content:"$ "; }
-    .card.plain .v::before{ content:""; }
-    .card.plain .v{ font-size:14px; font-weight:800; color:var(--muted); }
-    .card.hot{
-      border-color: rgba(227,6,19,.45);
-      box-shadow: 0 8px 22px rgba(227,6,19,.10);
-    }
-    .card.hot .k{
-      color:var(--brand-red);
-    }
+    .card .v::before{ content:"$ "; color:var(--muted); font-size:14px; font-weight:700; }
+    .card .sub{ margin-top:3px; font-size:10.5px; color:var(--muted); font-weight:600; }
+    .card .sub strong{ color:var(--ink); font-weight:900; }
 
-    .twoCol{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:12px;
-      margin-top:12px;
-    }
-    .box{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:14px;
-      padding:12px;
-    }
-    .list{
-      margin:0;
-      padding:0;
-      list-style:none;
-      display:grid;
-      gap:8px;
-    }
-    .list li{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      font-size:12.5px;
-      color:var(--ink);
-      font-weight:600;
-      line-height:1.25;
-    }
-    .check{
-      width:18px;height:18px;border-radius:6px;
-      background: rgba(227,6,19,.12);
-      border:1px solid rgba(227,6,19,.35);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--brand-red);
-      font-weight:900;
-      flex:0 0 auto;
-      margin-top:1px;
-    }
-
-    .warranty{
-      background: linear-gradient(180deg, #0b0b0c, #15171b);
-      color:#fff;
-      border:1px solid rgba(0,0,0,.3);
-    }
-    .warranty .k{
-      color:rgba(255,255,255,.72);
-      font-weight:800;
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.35px;
-    }
-    .warranty .list li{
-      color:#fff;
-      font-weight:600;
-    }
-    .warranty .check{
-      background:rgba(255,255,255,.10);
-      border-color:rgba(255,255,255,.20);
-      color:#fff;
-    }
+    .card.hot{ border-color:rgba(227,6,19,.4); border-width:2px; box-shadow:0 4px 14px rgba(227,6,19,.09); }
+    .card.hot .k{ color:var(--red); }
+    .card.hot .v{ color:var(--red); }
+    .card.hot .v::before{ color:rgba(227,6,19,.45); }
+    .card.firm{ border-color:#222; }
+    .card.dim{ opacity:.75; }
 
     .sell{
-      margin-top:12px;
-      border-radius:14px;
-      padding:12px 12px;
-      background: radial-gradient(700px 120px at 0% 0%, rgba(227,6,19,.16), transparent 55%),
-                  linear-gradient(180deg, #0b0b0c, #15171b);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
+      margin-top:10px; border-radius:10px; padding:11px 14px;
+      background:linear-gradient(180deg,#0b0b0c,#18191c);
+      color:#fff; border:1px solid rgba(255,255,255,.07);
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
     }
-    .sell strong{
-      font-size:16px;
-      font-weight:900;
-      letter-spacing:.3px;
-    }
-    .sell span{
-      font-size:12px;
-      color:rgba(255,255,255,.75);
-      font-weight:600;
-    }
+    .sell strong{ font-family:'Montserrat',sans-serif; font-size:14px; font-weight:900; }
+    .sell span{ font-size:12px; color:rgba(255,255,255,.6); font-weight:600; }
 
-    .footer{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    .sig{
-      border:1px dashed #cfd3d9;
-      border-radius:14px;
-      padding:14px 12px;
-      min-height:70px;
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-end;
-      gap:6px;
-    }
-    .sig .lbl{
-      font-size:11px;
-      color:var(--muted);
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.35px;
-    }
-    .sig .val{
-      font-size:13px;
-      font-weight:900;
-      color:var(--ink);
-    }
+    .twoCol{ display:grid; grid-template-columns:1.2fr .8fr; gap:11px; margin-top:11px; }
+    .box{ border:1px solid var(--line); background:#fff; border-radius:10px; padding:11px; }
+    .boxTitle{ font-family:'Montserrat',sans-serif; font-weight:900; font-size:12px; letter-spacing:.5px; text-transform:uppercase; margin:0 0 8px; }
+    .list{ margin:0; padding:0; list-style:none; display:grid; gap:6px; }
+    .list li{ display:flex; gap:8px; align-items:flex-start; font-size:12px; color:var(--ink); font-weight:600; line-height:1.3; }
+    .check{ width:16px; height:16px; border-radius:5px; flex:0 0 auto; margin-top:1px; background:rgba(227,6,19,.10); border:1px solid rgba(227,6,19,.28); display:inline-flex; align-items:center; justify-content:center; color:var(--red); font-weight:900; font-size:9px; }
+    .warranty{ background:linear-gradient(180deg,#0b0b0c,#18191c); color:#fff; border:1px solid rgba(0,0,0,.25); }
+    .warranty .boxTitle{ color:#fff; }
+    .warranty .list li{ color:rgba(255,255,255,.82); }
+    .warranty .check{ background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.2); color:#fff; }
 
-    /* placeholders */
+    .footer{ margin-top:13px; display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+    .sig{ border:1px dashed #cdd0d5; border-radius:10px; padding:12px; min-height:62px; display:flex; flex-direction:column; justify-content:flex-end; gap:5px; }
+    .sig .lbl{ font-size:9.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+    .sig .val{ font-size:13px; font-weight:700; color:var(--ink); }
+
     [data-k]{ white-space:pre-line; }
-    .empty{ opacity:.55; }
+    .empty{ opacity:.45; }
 
-    /* ====== PRINT ====== */
     @page{ size:A4; margin:0; }
-    @media print {
+    @media print{
       body{ background:#fff; }
       .toolbar{ display:none !important; }
       .wrap{ padding:0; }
-      .page{
-        width:210mm;
-        min-height:297mm;
-        border:none;
-        border-radius:0;
-        box-shadow:none;
-      }
+      .page{ width:210mm; min-height:297mm; border:none; border-radius:0; box-shadow:none; }
+      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .hero{ background:#0b0b0c !important; }
+      .bigPrice .value{ color:#fff !important; }
+      .sell{ background:#0b0b0c !important; }
+      .warranty{ background:#0b0b0c !important; }
     }
-  
-/* ===== FIX IMPRESION COLORES ===== */
-@media print {
-  body{
-    background:#fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .hero{
-    background:#0b0b0c !important;
-    color:#ffffff !important;
-  }
-
-  .bigPrice .value{
-    color:#ffffff !important;
-    font-weight:900 !important;
-  }
-
-  .listPrice strong{
-    color:#ffffff !important;
-    font-weight:900 !important;
-  }
-
-  *{
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-}
-
-</style>
+  </style>
 </head>
 <body>
 
   <div class="toolbar">
-    <button class="btn primary" id="btnPdf">Descargar PDF</button>
-    <button class="btn" onclick="window.print()">Imprimir</button>
-    <div class="hint">Datos automáticos desde el cotizador</div>
+    <button class="btn primary" id="btnPdf">⬇ Descargar PDF</button>
+    <button class="btn" onclick="window.print()">🖨 Imprimir</button>
+    <button class="btn wa" id="btnWa">💬 WhatsApp</button>
   </div>
 
-  <div class="wrap">
-    <div class="page" id="page">
-      <div class="inner">
+  <div class="wrap"><div class="page" id="page"><div class="inner">
 
-        <div class="topbar">
-          <div>
-            <img class="logo" src="ChatGPT Image 14 ene 2026, 04_12_24 p.m..png" alt="Quirgroup" />
-            <div class="pill"><span class="dot"></span> Instalación GNC · Presupuesto</div>
-          </div>
-
-          <div class="contact">
-            <div class="strong" data-k="dir1">Av. Leandro N. Alem 642</div>
-            <div class="strong" data-k="tel1">(351) 217-4455</div>
-            <div style="height:6px"></div>
-            <div class="strong" data-k="dir2">Zipoli 176 (Esq. Colón)</div>
-            <div class="strong" data-k="tel2">(351) 255-3456</div>
-            <div style="height:6px"></div>
-            <div data-k="web">www.quirgroupgnc.com.ar</div>
-          </div>
-        </div>
-
-        <div class="hero">
-          <div class="heroTop">
-            <div>
-              <h1 class="title">PRESUPUESTO</h1>
-              <p class="subtitle">Instalación completa GNC con oblea habilitante</p>
-            </div>
-
-            <div class="metaGrid">
-              <div class="metaItem">
-                <span>Vehículo</span>
-                <strong data-k="vehiculoTitle">—</strong>
-              </div>
-              <div class="metaItem">
-                <span>Equipo</span>
-                <strong data-k="equipo">—</strong>
-              </div>
-              <div class="metaItem">
-                <span>Asesor</span>
-                <strong data-k="asesor">—</strong>
-              </div>
-              <div class="metaItem">
-                <span>Fecha</span>
-                <strong data-k="fecha">—</strong>
-              </div>
-            </div>
-          </div>
-
-          <div class="priceRow">
-            <div class="bigPrice">
-              <div class="label">Promo contado (solo efectivo)</div>
-              <div class="value" data-k="precioDestacado">—</div>
-            </div>
-
-            <div class="listPrice">
-              <span>Precio de lista</span>
-              <strong data-k="precioLista">—</strong>
-            </div>
-          </div>
-
-          <div class="noteRow">
-            <div class="note">Incluye instalación, controles y documentación.</div>
-            <div class="badge"><span class="miniDot"></span> Instalación en el día</div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="sectionTitle">
-            <h2>Planes de pago</h2>
-            <div class="line"></div>
-          </div>
-
-          <div class="cards">
-
-            <div class="card hot">
-              <div class="k">3 Cuotas sin interés</div>
-              <div class="v" data-k="promo3">—</div>
-            </div>
-
-            <div class="card">
-              <div class="k">Débito / Transferencia</div>
-              <div class="v" data-k="debito">—</div>
-            </div>
-
-            <div class="card">
-              <div class="k">6 Cuotas sin interés (Cordobesa)</div>
-              <div class="v" data-k="cordo6">—</div>
-            </div>
-
-            <div class="card">
-              <div class="k">6 Cuotas sin interés (Naranja)</div>
-              <div class="v" data-k="naranja6">—</div>
-            </div>
-
-            <div class="card">
-              <div class="k">8 Cuotas sin interés (Naranja)</div>
-              <div class="v" data-k="naranja8">—</div>
-            </div>
-
-            <div class="card hot">
-              <div class="k">12 Cuotas (10% recargo)</div>
-              <div class="v" data-k="naranja12">—</div>
-            </div>
-
-          </div>
-
-          <div class="sell">
-            <div>
-              <strong>Ahorro estimado en combustible</strong><br>
-              <span>Hasta 50% vs nafta, según uso y vehículo</span>
-            </div>
-            <div class="badge"><span class="miniDot"></span> Cuota Simple · Visa/Master</div>
-          </div>
-
-          <div class="twoCol">
-            <div class="box">
-              <div class="sectionTitle" style="margin-bottom:8px">
-                <h2>Incluye</h2><div class="line"></div>
-              </div>
-              <ul class="list">
-                <li><span class="check">✓</span> Equipo completo con carga externa (bonificada)</li>
-                <li><span class="check">✓</span> Válvula cilindro con corte eléctrico</li>
-                <li><span class="check">✓</span> Cunas homologadas / cilindro nuevo</li>
-                <li><span class="check">✓</span> Oblea habilitante (vigencia 1 año)</li>
-                <li><span class="check">✓</span> Control mecánico general (encendido y diagnóstico sin cargo si corresponde)</li>
-              </ul>
-            </div>
-
-            <div class="box warranty">
-              <div class="sectionTitle" style="margin-bottom:8px">
-                <h2 style="color:#fff">Garantía</h2><div class="line" style="background:rgba(255,255,255,.14)"></div>
-              </div>
-              <ul class="list">
-                <li><span class="check">✓</span> Equipos y electrónica: 1 año de fábrica</li>
-                <li><span class="check">✓</span> Cilindros: 5 años de fábrica</li>
-                <li><span class="check">✓</span> Posventa instalación: 12 meses</li>
-                <li><span class="check">✓</span> Control de moderación (relentí y aceleración)</li>
-                <li><span class="check">✓</span> Cobertor de cilindro</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="footer">
-            <div class="sig">
-              <div class="lbl">Observaciones</div>
-              <div class="val">Validez por tiempo limitado.</div>
-            </div>
-            <div class="sig">
-              <div class="lbl">Asesor comercial</div>
-              <div class="val" data-k="asesor">—</div>
-            </div>
-          </div>
-
-        </div>
-
+    <div class="header">
+      <div class="logo-wrap">
+        <img class="logo-img" src="logo-quirgroup.png" alt="Quirgroup GNC"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div class="logo-fallback">QUIRGROUP<span>GNC</span></div>
+      </div>
+      <div class="contact">
+        <span class="brand">QUIRGROUP GNC</span>
+        <strong>Av. Leandro N. Alem 642</strong> · (351) 217-4455<br>
+        <strong>Zipoli 176 (Esq. Colón)</strong> · (351) 255-3456<br>
+        <span class="web">www.quirgroupgnc.com.ar</span>
       </div>
     </div>
-  </div>
+    <div class="pill"><span class="dot"></span> Instalación GNC · Presupuesto</div>
+
+    <div class="hero">
+      <div class="heroTop">
+        <div>
+          <h1 class="title">PRESUPUESTO</h1>
+          <p class="subtitle">Instalación completa GNC con oblea habilitante</p>
+        </div>
+        <div class="metaGrid">
+          <div class="metaItem"><span>Vehículo</span><strong data-k="vehiculoTitle">—</strong></div>
+          <div class="metaItem"><span>Equipo</span><strong data-k="equipo">—</strong></div>
+          <div class="metaItem"><span>Fecha</span><strong data-k="fecha">—</strong></div>
+          <div class="metaItem" id="clienteRow" style="display:none"><span>Cliente</span><strong data-k="cliente">—</strong></div>
+          <div class="metaItem"><span>Asesor</span><strong data-k="asesor">—</strong></div>
+        </div>
+      </div>
+      <div class="priceRow">
+        <div class="bigPrice">
+          <div class="label">Promo contado (solo efectivo)</div>
+          <div class="value" data-k="precioDestacado">—</div>
+        </div>
+        <div class="listPrice">
+          <span>Precio de lista</span>
+          <strong data-k="precioLista">—</strong>
+        </div>
+      </div>
+      <div class="noteRow">
+        <div class="note">Incluye instalación, controles y documentación.</div>
+        <div class="badge"><span class="md"></span> Instalación en el día</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectionTitle"><h2>Planes de pago</h2><div class="line"></div></div>
+      <div class="cards">
+        <div class="card hot"><div class="k">3 Cuotas sin interés</div><div class="v" data-k="promo3">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="promo3Total">—</span></strong></div></div>
+        <div class="card firm"><div class="k">Débito / Transferencia</div><div class="v" data-k="debito">—</div><div class="sub">Total</div></div>
+        <div class="card"><div class="k">6 Cuotas s/i · Cordobesa</div><div class="v" data-k="cordo6">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="cordo6Total">—</span></strong></div></div>
+        <div class="card"><div class="k">6 Cuotas s/i · Naranja X</div><div class="v" data-k="naranja6">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="naranja6Total">—</span></strong></div></div>
+        <div class="card"><div class="k">8 Cuotas s/i · Naranja X</div><div class="v" data-k="naranja8">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="naranja8Total">—</span></strong></div></div>
+        <div class="card dim"><div class="k">12 Cuotas · 10% recargo</div><div class="v" data-k="naranja12">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="naranja12Total">—</span></strong></div></div>
+      </div>
+
+      <div class="sell">
+        <div><strong>Ahorro estimado en combustible</strong><br><span>Hasta 50% vs nafta, según uso y vehículo</span></div>
+        <div class="badge"><span class="md"></span> Cuota Simple · Visa/Master</div>
+      </div>
+
+      <div class="twoCol">
+        <div class="box">
+          <div class="sectionTitle" style="margin-bottom:7px"><h2 class="boxTitle">Incluye</h2><div class="line"></div></div>
+          <ul class="list">
+            <li><span class="check">✓</span> Equipo completo con carga externa (bonificada)</li>
+            <li><span class="check">✓</span> Válvula cilindro con corte eléctrico</li>
+            <li><span class="check">✓</span> Cunas homologadas / cilindro nuevo</li>
+            <li><span class="check">✓</span> Oblea habilitante (vigencia 1 año)</li>
+            <li><span class="check">✓</span> Control mecánico general sin cargo</li>
+          </ul>
+        </div>
+        <div class="box warranty">
+          <div class="sectionTitle" style="margin-bottom:7px"><h2 class="boxTitle">Garantía</h2><div class="line" style="background:rgba(255,255,255,.14)"></div></div>
+          <ul class="list">
+            <li><span class="check">✓</span> Equipos y electrónica: 1 año de fábrica</li>
+            <li><span class="check">✓</span> Cilindros: 5 años de fábrica</li>
+            <li><span class="check">✓</span> Posventa instalación: 12 meses</li>
+            <li><span class="check">✓</span> Control de moderación incluido</li>
+            <li><span class="check">✓</span> Cobertor de cilindro</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="sig"><div class="lbl">Observaciones</div><div class="val" data-k="obs">Validez por tiempo limitado.</div></div>
+        <div class="sig"><div class="lbl">Asesor comercial</div><div class="val" data-k="asesor">—</div></div>
+      </div>
+    </div>
+
+  </div></div></div>
 
 <script>
-  function decodePayloadFromHash(){
-    const m = location.hash.match(/[#&]data=([^&]+)/);
-    if(!m) return null;
+  function decode(){ const m=location.hash.match(/[#&]data=([^&]+)/); if(!m) return null; try{ return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); }catch(e){ return null; } }
+  function read(){ const h=decode(); if(h) return h; try{ const s=localStorage.getItem("PRESUPUESTO_PAYLOAD"); if(s) return JSON.parse(s); }catch(e){} return null; }
+  function set(k,v){ document.querySelectorAll('[data-k="'+k+'"]').forEach(el=>{ const val=(v==null||String(v).trim()==="")?'—':String(v); el.textContent=val; el.classList.toggle('empty',val==='—'); }); }
+  function apply(p){ if(!p) return; Object.keys(p).forEach(k=>set(k,p[k])); if(p.cliente&&p.cliente.trim()) document.getElementById('clienteRow').style.display='block'; }
+  async function dlPDF(){
+    const btn=document.getElementById('btnPdf'); btn.textContent='Generando…';
     try{
-      const b64 = decodeURIComponent(m[1]);
-      const json = decodeURIComponent(escape(atob(b64)));
-      return JSON.parse(json);
-    }catch(e){ return null; }
+      const c=await html2canvas(document.getElementById('page'),{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#fff'});
+      const {jsPDF}=window.jspdf; const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+      doc.addImage(c.toDataURL('image/jpeg',.95),'JPEG',0,0,210,c.height*210/c.width,undefined,'FAST');
+      const p=read(); doc.save(p?`presupuesto-${(p.vehiculoTitle||'gnc').replace(/\s+/g,'-').toLowerCase()}.pdf`:'presupuesto-quirgroup.pdf');
+    }catch(e){ alert('Error al generar PDF. Usá Ctrl+P.'); } btn.textContent='⬇ Descargar PDF';
   }
-
-  function readPayload(){
-    const fromHash = decodePayloadFromHash();
-    if(fromHash) return fromHash;
-    try{
-      const s = localStorage.getItem("PRESUPUESTO_PAYLOAD");
-      if(s) return JSON.parse(s);
-    }catch(e){}
-    return null;
+  function dlWa(){
+    const p=read(); if(!p){ alert('No hay datos.'); return; }
+    const f=v=>(v&&v!=='—')?`$\u00a0${v}`:'—';
+    const msg=[ `🚗 *PRESUPUESTO GNC · QUIRGROUP*`,``, `*Vehículo:* ${p.vehiculoTitle||'—'}`, p.cliente?`*Cliente:* ${p.cliente}`:null, `*Equipo:* ${p.equipo||'—'}  ·  *Fecha:* ${p.fecha||'—'}`,``, `💰 *Contado efectivo:* ${f(p.precioDestacado)}`, `💳 *Transferencia:* ${f(p.debito)}`,``, `📋 *Planes:*`, `• 3 cuotas s/i → ${f(p.promo3)} c/u (Total ${f(p.promo3Total)})`, `• 6 cuotas s/i → ${f(p.cordo6)} c/u (Total ${f(p.cordo6Total)})`, `• 8 cuotas s/i → ${f(p.naranja8)} c/u (Total ${f(p.naranja8Total)})`, `• 12 cuotas → ${f(p.naranja12)} c/u (Total ${f(p.naranja12Total)})`,``, p.obs&&p.obs!=='—'?`📌 _${p.obs}_`:null,``, `📍 Av. Leandro N. Alem 642 · (351) 217-4455`, `📍 Zipoli 176 (Esq. Colón) · (351) 255-3456`, `🌐 www.quirgroupgnc.com.ar` ].filter(l=>l!==null).join('\n');
+    window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
   }
-
-  function setByKey(key, value){
-    const els = document.querySelectorAll('[data-k="'+key+'"]');
-    if(!els || !els.length) return;
-    const v = (value==null || String(value).trim()==="") ? "—" : String(value);
-    els.forEach(el=>{
-      el.textContent = v;
-      el.classList.toggle("empty", v==="—");
-    });
-  }
-
-  function applyPayload(p){
-    // contactos default si el cotizador no manda (se mantiene)
-    const defaults = {
-      dir1: "Av. Leandro N. Alem 642",
-      tel1: "(351) 217-4455",
-      dir2: "Zipoli 176 (Esq. Colón)",
-      tel2: "(351) 255-3456",
-      web: "www.quirgroupgnc.com.ar"
-    };
-    Object.keys(defaults).forEach(k=>setByKey(k, defaults[k]));
-
-    if(!p) {
-      // placeholders
-      ["vehiculoTitle","equipo","asesor","fecha","precioDestacado","precioLista","promo3","debito","cordo6","naranja6","naranja8","naranja12"].forEach(k=>setByKey(k,"—"));
-      return;
-    }
-    Object.keys(p).forEach(k=>setByKey(k, p[k]));
-  }
-
-  async function downloadPDF(){
-
-  const btn = document.getElementById("btnPdf");
-  btn.textContent = "Generando PDF...";
-
-  try{
-
-    const page = document.getElementById("page");
-
-    const canvas = await html2canvas(page,{
-      scale:2,
-      useCORS:true,
-      allowTaint:true,
-      backgroundColor:"#ffffff"
-    });
-
-    const imgData = canvas.toDataURL("image/jpeg",0.95);
-
-    const { jsPDF } = window.jspdf;
-
-    const pdf = new jsPDF({
-      orientation:"portrait",
-      unit:"mm",
-      format:"a4"
-    });
-
-    const pageWidth = 210;
-    const pageHeight = canvas.height * pageWidth / canvas.width;
-
-    pdf.addImage(
-      imgData,
-      "JPEG",
-      0,
-      0,
-      pageWidth,
-      pageHeight,
-      undefined,
-      "FAST"
-    );
-
-    pdf.save("presupuesto-quirgroup.pdf");
-
-  }catch(e){
-
-    alert("Error generando PDF");
-    console.error(e);
-
-  }
-
-  btn.textContent = "Descargar PDF";
-
-}
-
-  document.getElementById("btnPdf").addEventListener("click", downloadPDF);
-
-  applyPayload(readPayload());
+  document.getElementById('btnPdf').onclick=dlPDF;
+  document.getElementById('btnWa').onclick=dlWa;
+  apply(read());
 </script>
-
 </body>
 </html>
