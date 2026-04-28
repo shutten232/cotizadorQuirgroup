@@ -224,6 +224,7 @@
     const modelo = ($("modeloInput")?.value || "").trim();
     const asesor = ($("asesorInput")?.value || "").trim();
     const cliente = ($("clienteInput")?.value || "").trim();
+    const telefono = ($("telefonoInput")?.value || "").trim();
     const obs = ($("obsInput")?.value || "").trim();
 
     if(!modelo){
@@ -241,6 +242,7 @@
       vehiculoTitle: modelo,
       asesor: asesor || "—",
       cliente: cliente || "",
+      telefono: telefono || "",
       equipo: `${gen.toUpperCase()} – ${labelCil(cil)}`,
       fecha: todayAR(),
       obs: obs || "Validez por tiempo limitado.",

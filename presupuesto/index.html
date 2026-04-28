@@ -164,6 +164,7 @@
     <button class="btn primary" id="btnPdf">⬇ Descargar PDF</button>
     <button class="btn" onclick="window.print()">🖨 Imprimir</button>
     <button class="btn wa" id="btnWa">💬 WhatsApp</button>
+    <button class="btn" id="btnCopy">📋 Copiar mensaje</button>
   </div>
 
   <div class="wrap"><div class="page" id="page"><div class="inner">
@@ -194,6 +195,7 @@
           <div class="metaItem"><span>Equipo</span><strong data-k="equipo">—</strong></div>
           <div class="metaItem"><span>Fecha</span><strong data-k="fecha">—</strong></div>
           <div class="metaItem" id="clienteRow" style="display:none"><span>Cliente</span><strong data-k="cliente">—</strong></div>
+          <div class="metaItem" id="telefonoRow" style="display:none"><span>Teléfono</span><strong data-k="telefono">—</strong></div>
           <div class="metaItem"><span>Asesor</span><strong data-k="asesor">—</strong></div>
         </div>
       </div>
@@ -216,12 +218,12 @@
     <div class="section">
       <div class="sectionTitle"><h2>Planes de pago</h2><div class="line"></div></div>
       <div class="cards">
-        <div class="card hot"><div class="k">3 Cuotas sin interés</div><div class="v" data-k="promo3">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="promo3Total">—</span></strong></div></div>
-        <div class="card firm"><div class="k">Débito / Transferencia</div><div class="v" data-k="debito">—</div><div class="sub">Total</div></div>
-        <div class="card"><div class="k">6 Cuotas s/i · Cordobesa</div><div class="v" data-k="cordo6">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="cordo6Total">—</span></strong></div></div>
-        <div class="card"><div class="k">6 Cuotas s/i · Naranja X</div><div class="v" data-k="naranja6">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="naranja6Total">—</span></strong></div></div>
-        <div class="card"><div class="k">8 Cuotas s/i · Naranja X</div><div class="v" data-k="naranja8">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="naranja8Total">—</span></strong></div></div>
-        <div class="card dim"><div class="k">12 Cuotas · 10% recargo</div><div class="v" data-k="naranja12">—</div><div class="sub">c/cuota · Total <strong>$&nbsp;<span data-k="naranja12Total">—</span></strong></div></div>
+        <div class="card hot"><div class="k">3 Cuotas sin interés</div><div class="v" data-k="promo3">—</div><div class="sub">por cuota</div></div>
+        <div class="card firm"><div class="k">Débito / Transferencia</div><div class="v" data-k="debito">—</div><div class="sub">pago único</div></div>
+        <div class="card"><div class="k">6 Cuotas sin interés · Cordobesa</div><div class="v" data-k="cordo6">—</div><div class="sub">por cuota</div></div>
+        <div class="card"><div class="k">6 Cuotas sin interés · Naranja X</div><div class="v" data-k="naranja6">—</div><div class="sub">por cuota</div></div>
+        <div class="card"><div class="k">8 Cuotas sin interés · Naranja X</div><div class="v" data-k="naranja8">—</div><div class="sub">por cuota</div></div>
+        <div class="card dim"><div class="k">12 Cuotas · Naranja X</div><div class="v" data-k="naranja12">—</div><div class="sub">por cuota</div></div>
       </div>
 
       <div class="sell">
@@ -264,7 +266,7 @@
   function decode(){ const m=location.hash.match(/[#&]data=([^&]+)/); if(!m) return null; try{ return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); }catch(e){ return null; } }
   function read(){ const h=decode(); if(h) return h; try{ const s=localStorage.getItem("PRESUPUESTO_PAYLOAD"); if(s) return JSON.parse(s); }catch(e){} return null; }
   function set(k,v){ document.querySelectorAll('[data-k="'+k+'"]').forEach(el=>{ const val=(v==null||String(v).trim()==="")?'—':String(v); el.textContent=val; el.classList.toggle('empty',val==='—'); }); }
-  function apply(p){ if(!p) return; Object.keys(p).forEach(k=>set(k,p[k])); if(p.cliente&&p.cliente.trim()) document.getElementById('clienteRow').style.display='block'; }
+  function apply(p){ if(!p) return; Object.keys(p).forEach(k=>set(k,p[k])); if(p.cliente&&p.cliente.trim()) document.getElementById('clienteRow').style.display='block'; if(p.telefono&&p.telefono.trim()) document.getElementById('telefonoRow').style.display='block'; }
   async function dlPDF(){
     const btn=document.getElementById('btnPdf'); btn.textContent='Generando…';
     try{
@@ -274,14 +276,52 @@
       const p=read(); doc.save(p?`presupuesto-${(p.vehiculoTitle||'gnc').replace(/\s+/g,'-').toLowerCase()}.pdf`:'presupuesto-quirgroup.pdf');
     }catch(e){ alert('Error al generar PDF. Usá Ctrl+P.'); } btn.textContent='⬇ Descargar PDF';
   }
-  function dlWa(){
-    const p=read(); if(!p){ alert('No hay datos.'); return; }
+  function buildMsg(){
+    const p=read(); if(!p) return null;
     const f=v=>(v&&v!=='—')?`$\u00a0${v}`:'—';
-    const msg=[ `🚗 *PRESUPUESTO GNC · QUIRGROUP*`,``, `*Vehículo:* ${p.vehiculoTitle||'—'}`, p.cliente?`*Cliente:* ${p.cliente}`:null, `*Equipo:* ${p.equipo||'—'}  ·  *Fecha:* ${p.fecha||'—'}`,``, `💰 *Contado efectivo:* ${f(p.precioDestacado)}`, `💳 *Transferencia:* ${f(p.debito)}`,``, `📋 *Planes:*`, `• 3 cuotas s/i → ${f(p.promo3)} c/u (Total ${f(p.promo3Total)})`, `• 6 cuotas s/i → ${f(p.cordo6)} c/u (Total ${f(p.cordo6Total)})`, `• 8 cuotas s/i → ${f(p.naranja8)} c/u (Total ${f(p.naranja8Total)})`, `• 12 cuotas → ${f(p.naranja12)} c/u (Total ${f(p.naranja12Total)})`,``, p.obs&&p.obs!=='—'?`📌 _${p.obs}_`:null,``, `📍 Av. Leandro N. Alem 642 · (351) 217-4455`, `📍 Zipoli 176 (Esq. Colón) · (351) 255-3456`, `🌐 www.quirgroupgnc.com.ar` ].filter(l=>l!==null).join('\n');
-    window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+    return [
+      `🚗 *PRESUPUESTO GNC · QUIRGROUP*`,``,
+      `*Vehículo:* ${p.vehiculoTitle||'—'}`,
+      p.cliente?`*Cliente:* ${p.cliente}`:null,
+      `*Equipo:* ${p.equipo||'—'}  ·  *Fecha:* ${p.fecha||'—'}`,``,
+      `💰 *Contado efectivo:* ${f(p.precioDestacado)}`,
+      `💳 *Transferencia / Débito:* ${f(p.debito)}`,``,
+      `📋 *Planes de financiación:*`,
+      `• 3 cuotas sin interés → ${f(p.promo3)} por cuota`,
+      `• 6 cuotas sin interés (Cordobesa) → ${f(p.cordo6)} por cuota`,
+      `• 6 cuotas sin interés (Naranja X) → ${f(p.naranja6)} por cuota`,
+      `• 8 cuotas sin interés (Naranja X) → ${f(p.naranja8)} por cuota`,
+      `• 12 cuotas (Naranja X) → ${f(p.naranja12)} por cuota`,``,
+      p.obs&&p.obs!=='—'?`📌 _${p.obs}_`:null,``,
+      `📍 Av. Leandro N. Alem 642 · (351) 217-4455`,
+      `📍 Zipoli 176 (Esq. Colón) · (351) 255-3456`,
+      `🌐 www.quirgroupgnc.com.ar`
+    ].filter(l=>l!==null).join('\n');
+  }
+  function dlWa(){
+    const msg=buildMsg(); if(!msg){ alert('No hay datos.'); return; }
+    const p=read();
+    const tel=p&&p.telefono?p.telefono.replace(/\D/g,''):'';
+    const base=tel?`https://wa.me/549${tel}`:`https://wa.me/`;
+    window.open(base+'?text='+encodeURIComponent(msg),'_blank');
+  }
+  async function copyMsg(){
+    const msg=buildMsg(); if(!msg){ alert('No hay datos.'); return; }
+    const btn=document.getElementById('btnCopy');
+    try{
+      await navigator.clipboard.writeText(msg);
+    }catch(e){
+      const ta=document.createElement('textarea');
+      ta.value=msg; ta.style.cssText='position:fixed;left:-9999px';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    const orig=btn.textContent; btn.textContent='✓ Copiado!';
+    setTimeout(()=>btn.textContent=orig,2000);
   }
   document.getElementById('btnPdf').onclick=dlPDF;
   document.getElementById('btnWa').onclick=dlWa;
+  document.getElementById('btnCopy').onclick=copyMsg;
   apply(read());
 </script>
 </body>
